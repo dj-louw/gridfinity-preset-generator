@@ -17,12 +17,25 @@ Example:
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
 ORCA_SLICER = "orcaslicer"
+
+
+def resolve_slicer_command() -> list[str]:
+    if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
+        return [ORCA_SLICER]
+
+    xvfb = shutil.which("xvfb-run")
+    if xvfb:
+        return [xvfb, "-a", ORCA_SLICER]
+
+    return [ORCA_SLICER]
 
 
 def collect_stl_files(root: Path) -> list[Path]:
@@ -46,7 +59,7 @@ def determine_gcode_path(stl_path: Path) -> Path:
 
 
 def slice_stl(
-    slicer_path: str,
+    slicer_cmd: list[str],
     stl_path: Path,
     settings_list: str,
     filament_list: str,
@@ -63,7 +76,7 @@ def slice_stl(
         return True
 
     cmd = [
-        slicer_path,
+        *slicer_cmd,
         str(stl_path),
         "--load-settings",
         settings_list,
@@ -87,7 +100,11 @@ def slice_stl(
         print(f"Created: {fallback}")
         return True
 
-    raise FileNotFoundError(f"Slicing completed but no G-code file was produced for: {stl_path}")
+    raise FileNotFoundError(
+        f"Slicing completed but no G-code file was produced for: {stl_path}. "
+        "This usually means OrcaSlicer could not run successfully in this environment "
+        "(often a missing GUI/display or a headless runtime issue)."
+    )
 
 
 def run_slicing(
@@ -100,6 +117,7 @@ def run_slicing(
 ) -> int:
     settings_list = build_profile_list(profile_dir, settings_files)
     filament_list = build_profile_list(profile_dir, filament_files)
+    slicer_cmd = resolve_slicer_command()
 
     stl_files = collect_stl_files(stl_root)
     if not stl_files:
@@ -109,7 +127,7 @@ def run_slicing(
     sliced = 0
     for stl_path in stl_files:
         if slice_stl(
-            slicer_path=ORCA_SLICER,
+            slicer_cmd=slicer_cmd,
             stl_path=stl_path,
             settings_list=settings_list,
             filament_list=filament_list,
