@@ -71,7 +71,7 @@ def find_openscad() -> str:
 
 
 def build_model_path(output_root: Path, width: int, depth: int, height: int) -> Path:
-    return output_root / "bins" / f"{width}w" / f"{depth}d" / f"{height}h"
+    return output_root / "gridfinity-bins" / f"{width}w" / f"{depth}d" / f"{height}h"
 
 
 def feature_suffix(label_tab: bool, finger_scoop: bool) -> str:
