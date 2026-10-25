@@ -1,0 +1,12 @@
+{
+  "user": {
+    "filament": "/path/to/filament/user/settings",
+    "machine": "/path/to/machine/user/settings",
+    "process": "/path/to/process/user/settings"
+  },
+  "system": {
+    "filament": "/path/to/filament/system/settings
+    "machine": "/path/to/machine/system/settings
+    "process": "/path/to/process/system/settings
+  }
+}
