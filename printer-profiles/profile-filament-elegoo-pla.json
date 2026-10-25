@@ -1,0 +1,15 @@
+{
+	"filament_cost": [
+		"9.77"
+	],
+	"filament_extruder_variant": [
+		"Direct Drive Standard"
+	],
+	"filament_settings_id": [
+		"Elegoo PLA @ECC2 - 9.77 EUR"
+	],
+	"from": "User",
+	"inherits": "Elegoo PLA @ECC2",
+	"name": "Elegoo PLA @ECC2 - 9.77 EUR",
+	"version": "2.4.0.6"
+}

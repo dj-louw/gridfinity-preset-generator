@@ -1,0 +1,25 @@
+{
+	"alternate_extra_wall": "1",
+	"brim_type": "no_brim",
+	"enable_prime_tower": "0",
+	"ensure_vertical_shell_thickness": "ensure_moderate",
+	"flush_into_infill": "1",
+	"from": "User",
+	"inherits": "0.20mm Standard @Elegoo CC2 0.4 nozzle",
+	"initial_layer_print_height": "0.28",
+	"name": "Preset for rugged-box",
+	"prime_tower_width": "20",
+	"prime_volume": "20",
+	"print_extruder_id": [
+		"1"
+	],
+	"print_extruder_variant": [
+		"Direct Drive Standard"
+	],
+	"print_settings_id": "Preset for rugged-box",
+	"seam_gap": "50%",
+	"seam_slope_entire_loop": "1",
+	"sparse_infill_pattern": "adaptivecubic",
+	"version": "2.4.0.6",
+	"wall_loops": "4"
+}
