@@ -4,13 +4,14 @@
 This script renders one or more individual parts from the OpenSCAD model in
 `monoscad/gridfinity/rugged-box/rugged-box-gridfinity.scad`.
 
-The preset values and export parts are all defined near the top of this file so
-that they can be adjusted without editing the logic below.
+By default it renders every printable part in a single pass, including the top,
+bottom, latch, stacking latch, handle, and label. You only need to override the
+list if you want to generate a subset.
 
 Examples:
     python3 generate_rugged_box.py --preset default
-    python3 generate_rugged_box.py --preset my-favourite --part bottom --part top
-    python3 generate_rugged_box.py --width 4 --length 3 --bottom-height 7 --top-height 2
+    python3 generate_rugged_box.py --preset my-favourite
+    python3 generate_rugged_box.py --preset default --width 6 --length 4
 """
 
 from __future__ import annotations
@@ -27,26 +28,26 @@ from typing import Any
 # -----------------------------------------------------------------------------
 
 # Default preset to render when none is supplied on the command line.
-DEFAULT_PRESET = "default"
+DEFAULT_PRESET = "5x5-standard"
 
 # Saved presets. Update these with the dimensions you use most often.
 PRESETS: dict[str, dict[str, Any]] = {
-    "default": {
-        "Width": 4,
-        "Length": 2,
-        "Bottom_Height": 7,
+    "5x5-standard": {
+        "Width": 5,
+        "Length": 5,
+        "Bottom_Height": 5,
+        "Top_Height": 1,
+    },
+    "5x5 7 tall": {
+        "Width": 5,
+        "Length": 5,
+        "Bottom_Height": 5,
         "Top_Height": 2,
     },
-    "small": {
-        "Width": 2,
-        "Length": 2,
-        "Bottom_Height": 4,
-        "Top_Height": 2,
-    },
-    "standard": {
-        "Width": 4,
-        "Length": 3,
-        "Bottom_Height": 7,
+    "5x5-double-depth-12": {
+        "Width": 5,
+        "Length": 5,
+        "Bottom_Height": 10,
         "Top_Height": 2,
     },
     "wide": {
@@ -57,29 +58,27 @@ PRESETS: dict[str, dict[str, Any]] = {
     },
 }
 
-# Set the specific box part(s) to render. For a slicer-friendly workflow, keep
-# this as a list of the individual printable parts rather than the combined
-# assembled preview.
+# Default output set: generate every part in one run unless you override the list.
 PARTS_TO_EXPORT = [
     "bottom",
     "top",
     "latch",
-    "stacking_latch",
+    # "stacking_latch",
     "handle",
-    "label",
+    # "label",
 ]
 
 # Optional global Top/Bottom values that apply to all presets unless overridden.
 BASE_SETTINGS: dict[str, Any] = {
-    "Gridfinity_Base_Style": "enabled",
-    "Gridfinity_Stackable": True,
+    "Gridfinity_Base_Style": "minimal",
+    "Gridfinity_Stackable": False,
     "Lip_Seal_Type": "wedge",
-    "Reinforced_Corners": True,
+    "Reinforced_Corners": False,
     "Top_Grip": True,
     "Hinge_End_Stops": True,
-    "Stacking_Latches": True,
+    "Stacking_Latches": False,
     "Latch_Type": "draw",
-    "Third_Hinge": True,
+    "Third_Hinge": False,
     "Handle": True,
     "Label": True,
     "Label_Text": "Label",
@@ -154,7 +153,7 @@ def preset_config(preset_name: str, overrides: dict[str, Any] | None = None) -> 
 
 def output_dir_for_preset(output_root: Path, preset_name: str, width: int, length: int, bottom_height: int, top_height: int) -> Path:
     folder_name = f"{width}w-{length}d-{bottom_height}bh-{top_height}th"
-    return output_root / "rugged-box" / preset_name / folder_name
+    return output_root / "gridfinity-rugged-box" / preset_name / folder_name
 
 
 def render_part(
@@ -246,7 +245,7 @@ def main() -> int:
         action="append",
         dest="parts",
         default=[],
-        help="One or more part names to export (for example: bottom top latch). Repeat the flag as needed.",
+        help="Optional override: export only the named part(s). If omitted, all default parts are exported in one run.",
     )
     parser.add_argument(
         "--output-root",
