@@ -3,3 +3,6 @@ profile-paths.json
 orca-settings/*.json
 gridfinity-bins/
 gridfinity-rugged-box/
+
+#generated log files
+00000.log
