@@ -22,15 +22,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULT_WIDTHS = [1, 2, 3]
-DEFAULT_DEPTHS = [1, 2, 3]
-DEFAULT_HEIGHTS = [3, 6]
+DEFAULT_WIDTHS = [1]
+DEFAULT_DEPTHS = [1]
+DEFAULT_HEIGHTS = [3,6,7]
 
 # Values are 0=full, 1=auto, 2=left, 3=center, 4=right, 5=none.
-LABELTAB_STYLE = 2
+LABELTAB_STYLE = 5
 
 # A value of 0 disables the scoop; values between 0 and 1 scale the scoop amount.
-FINGER_SCOOP_ENABLED = 1
+FINGER_SCOOP_ENABLED = 0
 
 
 def parse_csv_ints(raw: str) -> list[int]:
@@ -89,13 +89,18 @@ def build_output_filename(width: int, depth: int, height: int, label_tab: bool, 
 
 
 def iter_variants(label_tab: bool | None = None, finger_scoop: bool | None = None) -> list[tuple[bool, bool]]:
+    tab_enabled = LABELTAB_STYLE != 5
+    scoop_enabled = FINGER_SCOOP_ENABLED != 0
+
     if label_tab is None and finger_scoop is None:
-        return [
-            (False, False),
-            (True, False),
-            (False, True),
-            (True, True),
-        ]
+        variants = [(False, False)]
+        if tab_enabled:
+            variants.append((True, False))
+        if scoop_enabled:
+            variants.append((False, True))
+        if tab_enabled and scoop_enabled:
+            variants.append((True, True))
+        return variants
 
     selected = []
     if label_tab is not None:
@@ -119,6 +124,9 @@ def iter_variants(label_tab: bool | None = None, finger_scoop: bool | None = Non
 def render_bin(scad_path: Path, output_path: Path, width: int, depth: int, height: int, label_tab: bool, finger_scoop: bool) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    style_tab = LABELTAB_STYLE if label_tab and LABELTAB_STYLE != 5 else 5
+    scoop_value = FINGER_SCOOP_ENABLED if finger_scoop and FINGER_SCOOP_ENABLED != 0 else 0
+
     args = [
         find_openscad(),
         "-o",
@@ -130,9 +138,9 @@ def render_bin(scad_path: Path, output_path: Path, width: int, depth: int, heigh
         "-D",
         f"gridz={height}",
         "-D",
-        f"style_tab={LABELTAB_STYLE if label_tab else 5}",
+        f"style_tab={style_tab}",
         "-D",
-        f"scoop={FINGER_SCOOP_ENABLED if finger_scoop else 0}",
+        f"scoop={scoop_value}",
     ]
 
     args.append(str(scad_path))
