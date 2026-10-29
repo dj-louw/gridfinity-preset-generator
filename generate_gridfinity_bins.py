@@ -22,15 +22,19 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULT_WIDTHS = [1,2,3,4]
-DEFAULT_DEPTHS = [1,2,3,4]
-DEFAULT_HEIGHTS = [3,6,7]
+DEFAULT_WIDTHS = [2]
+DEFAULT_DEPTHS = [1]
+DEFAULT_HEIGHTS = [6]
 
 # Values are 0=full, 1=auto, 2=left, 3=center, 4=right, 5=none.
 LABELTAB_STYLE = 2
 
 # A value of 0 disables the scoop; values between 0 and 1 scale the scoop amount.
 FINGER_SCOOP_ENABLED = 1
+
+# ===== CONFIG ===== #
+# This applies to every generated bin and does not create a new permutation.
+MAGNETS_ON_CORNERS_ONLY = True
 
 
 def parse_csv_ints(raw: str) -> list[int]:
@@ -88,40 +92,21 @@ def build_output_filename(width: int, depth: int, height: int, label_tab: bool, 
     return f"{width}x{depth}x{height}{suffix}.stl"
 
 
-def iter_variants(label_tab: bool | None = None, finger_scoop: bool | None = None) -> list[tuple[bool, bool]]:
+def iter_variants() -> list[tuple[bool, bool]]:
     tab_enabled = LABELTAB_STYLE != 5
     scoop_enabled = FINGER_SCOOP_ENABLED != 0
 
-    if label_tab is None and finger_scoop is None:
-        variants = [(False, False)]
-        if tab_enabled:
-            variants.append((True, False))
-        if scoop_enabled:
-            variants.append((False, True))
-        if tab_enabled and scoop_enabled:
-            variants.append((True, True))
-        return variants
-
-    selected = []
-    if label_tab is not None:
-        selected.append(label_tab)
-    else:
-        selected.append(False)
-    if finger_scoop is not None:
-        selected.append(finger_scoop)
-    else:
-        selected.append(False)
-
-    if selected == [True, False]:
-        return [(True, False)]
-    if selected == [False, True]:
-        return [(False, True)]
-    if selected == [True, True]:
-        return [(True, True)]
-    return [(False, False)]
+    variants = [(False, False)]
+    if tab_enabled:
+        variants.append((True, False))
+    if scoop_enabled:
+        variants.append((False, True))
+    if tab_enabled and scoop_enabled:
+        variants.append((True, True))
+    return variants
 
 
-def render_bin(scad_path: Path, output_path: Path, width: int, depth: int, height: int, label_tab: bool, finger_scoop: bool) -> None:
+def render_bin(scad_path: Path, output_path: Path, width: int, depth: int, height: int, label_tab: bool, finger_scoop: bool, only_corners: bool = MAGNETS_ON_CORNERS_ONLY) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     style_tab = LABELTAB_STYLE if label_tab and LABELTAB_STYLE != 5 else 5
@@ -141,6 +126,8 @@ def render_bin(scad_path: Path, output_path: Path, width: int, depth: int, heigh
         f"style_tab={style_tab}",
         "-D",
         f"scoop={scoop_value}",
+        "-D",
+        f"only_corners={str(only_corners).lower()}",
     ]
 
     args.append(str(scad_path))
@@ -156,8 +143,6 @@ def run_generation(
     heights: list[int],
     dry_run: bool,
     force: bool,
-    label_tab: bool | None,
-    finger_scoop: bool | None,
 ) -> int:
     repo_root = Path(__file__).resolve().parent
     scad_path = repo_root / "gridfinity-rebuilt-openscad" / "gridfinity-rebuilt-bins.scad"
@@ -165,7 +150,7 @@ def run_generation(
     if not scad_path.exists():
         raise FileNotFoundError(f"Model not found: {scad_path}")
 
-    variants = iter_variants(label_tab=label_tab, finger_scoop=finger_scoop)
+    variants = iter_variants()
     generated = 0
     total = len(widths) * len(depths) * len(heights) * len(variants)
 
@@ -231,22 +216,9 @@ def main() -> int:
         action="store_true",
         help="Overwrite existing files if they already exist",
     )
-    parser.add_argument(
-        "--label-tab",
-        action="store_true",
-        help="Generate label-tab variants only. If omitted, all variants are generated.",
-    )
-    parser.add_argument(
-        "--finger-scoop",
-        action="store_true",
-        help="Generate finger-scoop variants only. If omitted, all variants are generated.",
-    )
     args = parser.parse_args()
 
     try:
-        label_tab_flag = True if args.label_tab else None
-        finger_scoop_flag = True if args.finger_scoop else None
-
         return run_generation(
             output_root=args.output_root,
             widths=args.widths,
@@ -254,8 +226,6 @@ def main() -> int:
             heights=args.heights,
             dry_run=args.dry_run,
             force=args.force,
-            label_tab=label_tab_flag,
-            finger_scoop=finger_scoop_flag,
         )
     except FileNotFoundError as exc:
         print(f"Error: {exc}", file=sys.stderr)
