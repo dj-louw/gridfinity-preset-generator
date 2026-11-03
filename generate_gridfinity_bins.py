@@ -22,9 +22,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULT_WIDTHS = [2]
-DEFAULT_DEPTHS = [1]
-DEFAULT_HEIGHTS = [6]
+DEFAULT_WIDTHS = [1,2,3,4,5]
+DEFAULT_DEPTHS = [1,2,3,4,5]
+DEFAULT_HEIGHTS = [3,6,7,12]
 
 # Values are 0=full, 1=auto, 2=left, 3=center, 4=right, 5=none.
 LABELTAB_STYLE = 2

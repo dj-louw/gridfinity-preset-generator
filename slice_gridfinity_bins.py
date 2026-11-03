@@ -7,7 +7,7 @@ and the merged OrcaSlicer preset JSON files to live in `orca-settings/`.
 Default behavior:
 - scan the `gridfinity-bins/` tree for `.stl` files
 - slice each one with the configured OrcaSlicer process/printer/filament profiles
-- write `.gcode` next to the corresponding STL
+- write `.gcode` into `gridfinity-bins/sliced/`
 - skip files that already have a `.gcode` output
 
 Example:
@@ -59,23 +59,27 @@ def build_profile_list(profile_dir: Path, filenames: list[str]) -> str:
     return ";".join(profiles)
 
 
-def determine_gcode_path(stl_path: Path) -> Path:
-    return stl_path.with_suffix(".gcode")
+def determine_gcode_path(stl_path: Path, stl_root: Path) -> Path:
+    relative = stl_path.relative_to(stl_root)
+    return stl_root / "sliced" / relative.with_suffix(".gcode")
 
 
-def determine_output_dir(stl_path: Path) -> Path:
-    return stl_path.parent / f".orcaslicer-{stl_path.stem}"
+def determine_output_dir(stl_path: Path, stl_root: Path) -> Path:
+    relative = stl_path.relative_to(stl_root)
+    return stl_root / "sliced" / relative.parent / f".orcaslicer-{stl_path.stem}"
 
 
 def slice_stl(
     slicer_cmd: list[str],
     stl_path: Path,
+    stl_root: Path,
     settings_list: str,
     filament_list: str,
     dry_run: bool,
     force: bool,
 ) -> bool:
-    final_gcode = determine_gcode_path(stl_path)
+    final_gcode = determine_gcode_path(stl_path, stl_root)
+    final_gcode.parent.mkdir(parents=True, exist_ok=True)
     if final_gcode.exists() and not force:
         print(f"Skipping existing G-code: {final_gcode}")
         return False
@@ -84,7 +88,7 @@ def slice_stl(
         print(f"Would slice: {stl_path} -> {final_gcode}")
         return True
 
-    temp_dir = determine_output_dir(stl_path)
+    temp_dir = determine_output_dir(stl_path, stl_root)
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
@@ -140,6 +144,7 @@ def run_slicing(
         if slice_stl(
             slicer_cmd=slicer_cmd,
             stl_path=stl_path,
+            stl_root=stl_root,
             settings_list=settings_list,
             filament_list=filament_list,
             dry_run=dry_run,

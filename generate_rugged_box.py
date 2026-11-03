@@ -38,7 +38,7 @@ PRESETS: dict[str, dict[str, Any]] = {
         "Bottom_Height": 5,
         "Top_Height": 1,
     },
-    "5x5 7 tall": {
+    "5x5-7-tall": {
         "Width": 5,
         "Length": 5,
         "Bottom_Height": 5,
@@ -77,7 +77,7 @@ BASE_SETTINGS: dict[str, Any] = {
     "Top_Grip": True,
     "Hinge_End_Stops": True,
     "Stacking_Latches": False,
-    "Latch_Type": "draw",
+    "Latch_Type": "clip",
     "Third_Hinge": False,
     "Handle": True,
     "Label": True,
