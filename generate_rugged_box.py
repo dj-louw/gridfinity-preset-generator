@@ -41,8 +41,8 @@ PRESETS: dict[str, dict[str, Any]] = {
     "5x5-7-tall": {
         "Width": 5,
         "Length": 5,
-        "Bottom_Height": 5,
-        "Top_Height": 2,
+        "Bottom_Height": 6,
+        "Top_Height": 1,
     },
     "5x5-double-depth-12": {
         "Width": 5,
@@ -70,14 +70,14 @@ PARTS_TO_EXPORT = [
 
 # Optional global Top/Bottom values that apply to all presets unless overridden.
 BASE_SETTINGS: dict[str, Any] = {
-    "Gridfinity_Base_Style": "minimal",
-    "Gridfinity_Stackable": False,
-    "Lip_Seal_Type": "wedge",
+    "Gridfinity_Base_Style": "minimal",  # thick, enabled, enabled_full
+    "Gridfinity_Stackable": True,
+    "Lip_Seal_Type": "wedge",  # none, square, filament-1.75mm
     "Reinforced_Corners": False,
     "Top_Grip": True,
     "Hinge_End_Stops": True,
     "Stacking_Latches": False,
-    "Latch_Type": "clip",
+    "Latch_Type": "clip",  # draw
     "Third_Hinge": False,
     "Handle": True,
     "Label": True,
